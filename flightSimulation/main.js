@@ -33,6 +33,7 @@ function init() {
   camera = new THREE.PerspectiveCamera(45, game_canvas.clientWidth / game_canvas.clientHeight, 1, 2000);
   camera.name = 'camera';
   camera.position.z = 10;
+  scene.add(camera);
 
 
   // Renderer

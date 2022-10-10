@@ -1,11 +1,11 @@
 import './style.css'
 import * as THREE from 'three';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+import { FlyControls } from 'three/addons/controls/FlyControls.js';
 
 // Initalization of variables
-let scene, camera, renderer, controls;
+let scene, camera, renderer, controls, clock, flycontrols;
 let game_canvas = document.getElementById("myCanvas");
-let deltaTime;
 
 function main() {
 
@@ -19,6 +19,9 @@ function main() {
  *  and initializes the scene, as well as adding DOM listeners
  */
 function init() {
+
+  // Clock
+  clock = new THREE.Clock();
 
 
   // Scene
@@ -54,44 +57,50 @@ function init() {
   // Renderer
 
 
-  renderer = new THREE.WebGLRenderer( { canvas: game_canvas } );
+  renderer = new THREE.WebGLRenderer({ canvas: game_canvas });
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(game_canvas.clientWidth, game_canvas.clientHeight);
 
   //GridHelper
-  let HelperXZ = new THREE.GridHelper( 100, 100 );
+
+
+  let HelperXZ = new THREE.GridHelper(100, 100);
   scene.add(HelperXZ);
 
-  let HelperXY = new THREE.GridHelper( 100, 100 );
-  HelperXY.rotation.x = Math.PI/2;
+  let HelperXY = new THREE.GridHelper(100, 100);
+  HelperXY.rotation.x = Math.PI / 2;
   scene.add(HelperXY)
 
   // Controls
 
+
   let instructions = document.getElementById('instructions');
   let blocker = document.getElementById('blocker');
 
-  controls = new PointerLockControls( camera, document.body );
+  controls = new PointerLockControls(camera, document.body);
 
-  instructions.addEventListener( 'click', function () {
+  instructions.addEventListener('click', function () {
 
     controls.lock();
 
-  } );
+  });
 
-  controls.addEventListener( 'lock', function () {
+  controls.addEventListener('lock', function () {
 
     instructions.style.display = 'none';
     blocker.style.display = 'none';
+  });
 
-  } );
-
-  controls.addEventListener( 'unlock', function () {
+  controls.addEventListener('unlock', function () {
 
     blocker.style.display = 'block';
     instructions.style.display = '';
+  });
 
-  } );
+  flycontrols = new FlyControls(camera, document.body);
+
+  flycontrols.autoForward = true;
+  flycontrols.movementSpeed = 5;
 
 }
 
@@ -101,18 +110,15 @@ function init() {
  *  resetting the puzzle when complete.
  */
 function loop(time) {
+
+  const delta = clock.getDelta();
+
   requestAnimationFrame(loop);
 
-  time *= 0.001;
-
-  if (time == undefined)
-    time = 0;
-
-  deltaTime = time - deltaTime;
+  flycontrols.update(delta);
 
   render();
 
-  deltaTime = time;
 }
 
 /**

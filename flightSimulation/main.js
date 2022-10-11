@@ -106,8 +106,8 @@ function init() {
 
   flycontrols = new FlyControls(camera, document.body);
 
-  flycontrols.autoForward = true;
-  flycontrols.movementSpeed = 5;
+  flycontrols.autoForward = false;
+  flycontrols.movementSpeed = 10;
 
   // Random Boxes
 

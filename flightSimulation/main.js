@@ -4,7 +4,7 @@ import { PointerLockControls } from 'three/addons/controls/PointerLockControls.j
 import { FlyControls } from 'three/addons/controls/FlyControls.js';
 
 // Initalization of variables
-let scene, camera, renderer, controls, clock, flycontrols, cameraCube, collisions;
+let scene, camera, renderer, controls, clock, move, flycontrols, cameraCube, collisions;
 let game_canvas = document.getElementById("myCanvas");
 
 function getRndInteger(min, max) {
@@ -80,6 +80,7 @@ function init() {
 
   let instructions = document.getElementById('instructions');
   let blocker = document.getElementById('blocker');
+  move = false;
 
   controls = new PointerLockControls(camera, document.body);
 
@@ -93,12 +94,14 @@ function init() {
 
     instructions.style.display = 'none';
     blocker.style.display = 'none';
+    move = true;
   });
 
   controls.addEventListener('unlock', function () {
 
     blocker.style.display = 'block';
     instructions.style.display = '';
+    move = false;
   });
 
   flycontrols = new FlyControls(camera, document.body);
@@ -169,7 +172,9 @@ function loop(time) {
 
   detectCollisions();
 
-  flycontrols.update(delta);
+  if (move) {
+    flycontrols.update(delta);
+  }
 
   render();
 

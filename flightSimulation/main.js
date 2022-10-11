@@ -164,7 +164,7 @@ function detectCollisions() {
  *  loop is the main loop, responible for updating the canvas, 
  *  resetting the puzzle when complete.
  */
-function loop(time) {
+function loop() {
 
   const delta = clock.getDelta();
 

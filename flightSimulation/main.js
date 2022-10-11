@@ -5,6 +5,7 @@ import { FlyControls } from 'three/addons/controls/FlyControls.js';
 
 // Initalization of variables
 let scene, camera, renderer, controls, clock, move, flycontrols, cameraCube, collisions;
+let light;
 let game_canvas = document.getElementById("myCanvas");
 
 function getRndInteger(min, max) {
@@ -25,6 +26,8 @@ function main() {
 function init() {
 
   // Clock
+
+
   clock = new THREE.Clock();
 
 
@@ -46,12 +49,19 @@ function init() {
   scene.add(camera);
 
 
+  // Lighting
+
+  light = new THREE.PointLight(0xFFFFFF, 1, 20, 1);
+  camera.add(light);
+
   // Geometry
+
   let sphere = new THREE.SphereGeometry(1.5, 20, 16);
 
   // Material
-  let materialOne = new THREE.MeshBasicMaterial({
-    color: 0xFF0000,
+  let materialOne = new THREE.MeshStandardMaterial({
+    color: 0x0000FF,
+    emissive: 0x0000FF
   });
 
   // Mesh
@@ -106,7 +116,7 @@ function init() {
 
   flycontrols = new FlyControls(camera, document.body);
 
-  flycontrols.autoForward = false;
+  flycontrols.autoForward = true;
   flycontrols.movementSpeed = 10;
 
   // Random Boxes
@@ -118,8 +128,9 @@ function init() {
 
   for (let i = 0; i < 500; i++) {
 
-    const boxMaterial = new THREE.MeshBasicMaterial({
+    const boxMaterial = new THREE.MeshStandardMaterial({
       color: 0xFF0000,
+      emissive: 0x110000
     });
 
     const box = new THREE.Mesh(boxGeometry, boxMaterial);
@@ -164,7 +175,7 @@ function detectCollisions() {
  *  loop is the main loop, responible for updating the canvas, 
  *  resetting the puzzle when complete.
  */
-function loop(time) {
+function loop() {
 
   const delta = clock.getDelta();
 

@@ -4,8 +4,12 @@ import { PointerLockControls } from 'three/addons/controls/PointerLockControls.j
 import { FlyControls } from 'three/addons/controls/FlyControls.js';
 
 // Initalization of variables
-let scene, camera, renderer, controls, clock, flycontrols;
+let scene, camera, renderer, controls, clock, flycontrols, cameraCube, collisions;
 let game_canvas = document.getElementById("myCanvas");
+
+function getRndInteger(min, max) {
+  return Math.floor(Math.random() * (max - min)) + min;
+}
 
 function main() {
 
@@ -102,8 +106,56 @@ function init() {
   flycontrols.autoForward = true;
   flycontrols.movementSpeed = 5;
 
+  // Random Boxes
+
+  const boxGeometry = new THREE.BoxGeometry(2, 2, 2).toNonIndexed();
+
+  const objects = [];
+  collisions = [];
+
+  for (let i = 0; i < 500; i++) {
+
+    const boxMaterial = new THREE.MeshBasicMaterial({
+      color: 0xFF0000,
+    });
+
+    const box = new THREE.Mesh(boxGeometry, boxMaterial);
+    box.position.x = getRndInteger(-50, 50);
+    box.position.y = getRndInteger(-50, 50);
+    box.position.z = getRndInteger(-50, 50);
+
+    box.geometry.computeBoundingBox();
+    box.updateMatrixWorld();
+    var bb = box.geometry.boundingBox.clone();
+    bb.applyMatrix4(box.matrixWorld);
+
+    collisions.push(bb);
+
+    scene.add(box);
+    objects.push(box);
+
+  }
+
+  // Collision Detection
+  const cameraGeometry = new THREE.BoxGeometry(3, 3, 3);
+  const cameraMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+  cameraCube = new THREE.Mesh(cameraGeometry, cameraMaterial);
 }
 
+// Function to detect collisions between the camera and random boxes
+function detectCollisions() {
+  cameraCube.position.set(camera.position.x, camera.position.y, camera.position.z);
+  cameraCube.geometry.computeBoundingBox();
+  cameraCube.updateMatrixWorld();
+  var cbb = cameraCube.geometry.boundingBox.clone();
+  cbb.applyMatrix4(cameraCube.matrixWorld);
+
+  collisions.forEach(bb => {
+    if (cbb.intersectsBox(bb)) {
+      camera.position.set(0, 0, 0);
+    }
+  });
+}
 
 /**
  *  loop is the main loop, responible for updating the canvas, 
@@ -114,6 +166,8 @@ function loop(time) {
   const delta = clock.getDelta();
 
   requestAnimationFrame(loop);
+
+  detectCollisions();
 
   flycontrols.update(delta);
 

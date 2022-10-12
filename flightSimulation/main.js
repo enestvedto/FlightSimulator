@@ -125,7 +125,6 @@ function init() {
   flycontrols.movementSpeed = 10;
 
   // Particle explosion
-
   // Random Boxes
 
   var boxGeometry = new THREE.BoxGeometry(2, 2, 2).toNonIndexed();
@@ -133,11 +132,12 @@ function init() {
   objects = [];
 
   for (let i = 0; i < 500; i++) {
-
-    //const boxMaterial = new THREE.MeshStandardMaterial({
-    //  color: 0xFF0000,
-    //  emissive: 0x110000
-    // });
+    /*
+        const boxMaterial = new THREE.MeshStandardMaterial({
+          color: 0xFF0000,
+          emissive: 0x110000
+        });
+        */
     boxGeometry = tessellateModifier.modify(boxGeometry);
 
     const numFaces = boxGeometry.attributes.position.count / 3;
@@ -157,6 +157,7 @@ function init() {
 
     var customUniforms = {
       amplitude: { value: 0.0 },
+      delta: { value: 0 }
     };
 
     var boxMaterial = new THREE.ShaderMaterial({
@@ -212,6 +213,11 @@ function detectCollisions() {
 var delta = 0;
 
 function loop() {
+
+  delta += 0.3;
+  objects.forEach(box => {
+    box.material.uniforms.delta.value = Math.sin(delta);
+  });
 
   detectCollisions();
 

@@ -24,12 +24,24 @@
   <script type="x-shader/x-vertex" id="vertexShader">
     uniform float amplitude; // animates face/triangle vertices movement
     attribute vec3 displacement;
+    uniform float delta;
 
     void main() {
       // add velocity to position of vertices
-      vec3 newPosition = position + normal * amplitude * displacement;
+      if(amplitude > 0.0)
+      {
+        vec3 newPosition = position + normal * amplitude * displacement;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4( newPosition, 1.0 );
+      }
+      else
+      {
+        float d = delta * 0.1;
+        vec3 p = position;
+        p += d * p;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
+      }
 
-      gl_Position = projectionMatrix * modelViewMatrix * vec4( newPosition, 1.0 );
+      
 
     }
   </script>

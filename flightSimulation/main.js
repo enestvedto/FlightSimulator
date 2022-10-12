@@ -2,10 +2,12 @@ import './style.css'
 import * as THREE from 'three';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import { FlyControls } from 'three/addons/controls/FlyControls.js';
+import { TessellateModifier } from 'three/examples/jsm/modifiers/TessellateModifier';
 
 // Initalization of variables
-let scene, camera, renderer, controls, clock, move, flycontrols, cameraCube, objects, collisions;
+let scene, camera, renderer, controls, clock, move, flycontrols, cameraCube, objects;
 let light;
+let mesh;
 let game_canvas = document.getElementById("myCanvas");
 
 function getRndInteger(min, max) {
@@ -24,6 +26,7 @@ function main() {
  *  and initializes the scene, as well as adding DOM listeners
  */
 function init() {
+  const tessellateModifier = new TessellateModifier(0.2, 5);
 
   // Clock
 
@@ -65,7 +68,9 @@ function init() {
   });
 
   // Mesh
-  let mesh = new THREE.Mesh(sphere, materialOne);
+
+
+  mesh = new THREE.Mesh(sphere, materialOne);
   scene.add(mesh);
 
   // Renderer
@@ -119,12 +124,13 @@ function init() {
   flycontrols.autoForward = true;
   flycontrols.movementSpeed = 10;
 
+  // Particle explosion
+
   // Random Boxes
 
-  const boxGeometry = new THREE.BoxGeometry(2, 2, 2).toNonIndexed();
+  var boxGeometry = new THREE.BoxGeometry(2, 2, 2).toNonIndexed();
 
   objects = [];
-  collisions = [];
 
   for (let i = 0; i < 500; i++) {
 
@@ -132,30 +138,37 @@ function init() {
     //  color: 0xFF0000,
     //  emissive: 0x110000
     // });
+    boxGeometry = tessellateModifier.modify(boxGeometry);
+
+    const numFaces = boxGeometry.attributes.position.count / 3;
+    const displacement = new Float32Array(numFaces * 3 * 3);
+    for (let f = 0; f < numFaces; f++) {
+      const index = 9 * f;
+      const d = 10 * (0.5 - Math.random());
+
+      for (let i = 0; i < 3; i++) {
+        displacement[index + (3 * i)] = d;
+        displacement[index + (3 * i) + 1] = d;
+        displacement[index + (3 * i) + 2] = d;
+      }
+    }
+    boxGeometry.setAttribute('displacement', new THREE.BufferAttribute(displacement, 3));
+
 
     var customUniforms = {
-      count1: { value: 0 },
-      count2: { value: 0 },
-      delta: { value: 0 }
+      amplitude: { value: 0.0 },
     };
 
     var boxMaterial = new THREE.ShaderMaterial({
       uniforms: customUniforms,
       vertexShader: document.getElementById('vertexShader').textContent,
-      fragmentShader: document.getElementById('fragShader').textContent
     });
 
     const box = new THREE.Mesh(boxGeometry, boxMaterial);
     box.position.x = getRndInteger(-50, 50);
     box.position.y = getRndInteger(-50, 50);
     box.position.z = getRndInteger(-50, 50);
-
-    box.geometry.computeBoundingBox();
-    box.updateMatrixWorld();
-    var bb = box.geometry.boundingBox.clone();
-    bb.applyMatrix4(box.matrixWorld);
-
-    collisions.push(bb);
+    boxGeometry = tessellateModifier.modify(boxGeometry);
 
     scene.add(box);
     objects.push(box);
@@ -176,10 +189,19 @@ function detectCollisions() {
   var cbb = cameraCube.geometry.boundingBox.clone();
   cbb.applyMatrix4(cameraCube.matrixWorld);
 
-  collisions.forEach(bb => {
+  objects.forEach(box => {
+    box.geometry.computeBoundingBox();
+    box.updateMatrixWorld();
+    var bb = box.geometry.boundingBox.clone();
+    bb.applyMatrix4(box.matrixWorld);
     if (cbb.intersectsBox(bb)) {
-      camera.position.set(0, 0, 0);
+      box.material.uniforms.amplitude.value += 0.1;
+      if (box.material.uniforms.amplitude.value > 1) {
+        scene.remove(box);
+        box.material.uniforms.amplitude.value = 0;
+      }
     }
+
   });
 }
 
@@ -191,21 +213,17 @@ var delta = 0;
 
 function loop() {
 
+  detectCollisions();
+
   const deltaTime = clock.getDelta();
-  delta += 1.5;
-  objects.forEach(box => {
-    box.material.uniforms.delta.value = Math.sin(delta);
-    box.material.uniforms.count1.value += 0.001;
-    box.material.uniforms.count2.value = 0;
-  });
+
   requestAnimationFrame(loop);
 
-  detectCollisions();
+  //detectCollisions();
 
   if (move) {
     flycontrols.update(deltaTime);
   }
-
   render();
 
 }

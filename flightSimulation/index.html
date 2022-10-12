@@ -21,6 +21,50 @@
   </div>
   <script type="module" src="/main.js"></script>
   <canvas id="myCanvas"></canvas>
+  <script type="x-shader/x-vertex" id="vertexShader">
+    out float rand;  // Pass to the fragment shader
+    uniform float count1;
+    uniform float count2;
+    uniform float delta;
+    
+    // Used to get random numbers
+    // Found here https://stackoverflow.com/questions/5149544/can-i-generate-a-random-number-inside-a-pixel-shader
+    float random( vec2 p )
+    {
+        vec2 K1 = vec2(
+            23.14069263277926, // e^pi (Gelfond's constant)
+             2.665144142690225 // 2^sqrt(2) (Gelfondâ€“Schneider constant)
+        );
+        return fract( cos( dot(p,K1) ) * 12345.6789 );
+    }
+    
+    void main() 
+    {
+        // can change the impact of delta here
+        float displacement = delta * 0.5;
+        
+        // the vertex displacement is simply the sine of delta
+        vec3 p = position;
+        p += displacement*p;
+
+        // Grab a random number based on the position of the vertex
+        rand = random( vec2( count1, count2 ) );
+    
+        // You need the "projectionMatrix * viewMatrix * modelMatrix" which is part of ShaderMaterial
+        gl_Position =  projectionMatrix * viewMatrix * modelMatrix * vec4(p, 1.0);
+    }
+        </script>
+
+  <script type="x-shader/x-vertex" id="fragShader">
+    in float rand;
+    
+    void main() 
+    {
+        
+        gl_FragColor = vec4(1.0, rand, 1.0-rand, 1.0);
+    }
+        </script>
+
 </body>
 
 </html>

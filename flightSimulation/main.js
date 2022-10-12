@@ -4,7 +4,7 @@ import { PointerLockControls } from 'three/addons/controls/PointerLockControls.j
 import { FlyControls } from 'three/addons/controls/FlyControls.js';
 
 // Initalization of variables
-let scene, camera, renderer, controls, clock, move, flycontrols, cameraCube, collisions;
+let scene, camera, renderer, controls, clock, move, flycontrols, cameraCube, objects, collisions;
 let light;
 let game_canvas = document.getElementById("myCanvas");
 
@@ -123,14 +123,26 @@ function init() {
 
   const boxGeometry = new THREE.BoxGeometry(2, 2, 2).toNonIndexed();
 
-  const objects = [];
+  objects = [];
   collisions = [];
 
   for (let i = 0; i < 500; i++) {
 
-    const boxMaterial = new THREE.MeshStandardMaterial({
-      color: 0xFF0000,
-      emissive: 0x110000
+    //const boxMaterial = new THREE.MeshStandardMaterial({
+    //  color: 0xFF0000,
+    //  emissive: 0x110000
+    // });
+
+    var customUniforms = {
+      count1: { value: 0 },
+      count2: { value: 0 },
+      delta: { value: 0 }
+    };
+
+    var boxMaterial = new THREE.ShaderMaterial({
+      uniforms: customUniforms,
+      vertexShader: document.getElementById('vertexShader').textContent,
+      fragmentShader: document.getElementById('fragShader').textContent
     });
 
     const box = new THREE.Mesh(boxGeometry, boxMaterial);
@@ -175,16 +187,23 @@ function detectCollisions() {
  *  loop is the main loop, responible for updating the canvas, 
  *  resetting the puzzle when complete.
  */
+var delta = 0;
+
 function loop() {
 
-  const delta = clock.getDelta();
-
+  const deltaTime = clock.getDelta();
+  delta += 1.5;
+  objects.forEach(box => {
+    box.material.uniforms.delta.value = Math.sin(delta);
+    box.material.uniforms.count1.value += 0.001;
+    box.material.uniforms.count2.value = 0;
+  });
   requestAnimationFrame(loop);
 
   detectCollisions();
 
   if (move) {
-    flycontrols.update(delta);
+    flycontrols.update(deltaTime);
   }
 
   render();

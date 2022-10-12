@@ -7,6 +7,7 @@ import { TessellateModifier } from 'three/examples/jsm/modifiers/TessellateModif
 // Initalization of variables
 let scene, camera, renderer, controls, clock, move, flycontrols, cameraCube, objects;
 let light;
+let customUniforms;
 let mesh;
 let game_canvas = document.getElementById("myCanvas");
 
@@ -155,9 +156,9 @@ function init() {
     boxGeometry.setAttribute('displacement', new THREE.BufferAttribute(displacement, 3));
 
 
-    var customUniforms = {
+    customUniforms = {
       amplitude: { value: 0.0 },
-      delta: { value: 0 }
+      delta: { value: 0 },
     };
 
     var boxMaterial = new THREE.ShaderMaterial({
@@ -213,7 +214,6 @@ function detectCollisions() {
 var delta = 0;
 
 function loop() {
-
   delta += 0.3;
   objects.forEach(box => {
     box.material.uniforms.delta.value = Math.sin(delta);

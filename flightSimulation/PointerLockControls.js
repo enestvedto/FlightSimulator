@@ -162,7 +162,6 @@ class PointerLockControls extends THREE.EventDispatcher {
 
     if (this.moveForward) {
       this.inputVelocity.z = -this.velocityFactor * delta
-      this.inputVelocity.y = -this.velocityFactor * delta
     }
 
     // Convert velocity to world coordinates
@@ -173,9 +172,8 @@ class PointerLockControls extends THREE.EventDispatcher {
     this.inputVelocity.applyQuaternion(this.quaternion)
 
     // Add to the object
-    this.velocity.x += this.inputVelocity.x
-    this.velocity.y += this.inputVelocity.y
-    this.velocity.z += this.inputVelocity.z
+    this.velocity.x += this.inputVelocity.x 
+    this.velocity.z += this.inputVelocity.z 
 
     this.yawObject.position.copy(this.cannonBody.position)
   }

@@ -4,17 +4,17 @@ import * as CANNON from 'cannon-es';
 import { BoxObject } from './GameObject';
 import CannonDebugger from 'cannon-es-debugger';
 
-import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
-import { FlyControls } from 'three/addons/controls/FlyControls.js';
+import { PointerLockControls } from './PointerLockControls.js';
 
 // Initalization of variables
 let scene, camera, renderer, clock;
 
 let physicsWorld, physicsDebugger;
+let timeStep = 1/60;
 
-let controls, move, flycontrols, cameraCube;
+let gameObjects, playerObject;
 
-let gameObjects = [];
+let controls;
 
 let light;
 let game_canvas = document.getElementById("myCanvas");
@@ -29,6 +29,9 @@ function main() {
   initGraphicsWorld();
 
   init();
+
+  initControls();
+
   loop();
 
 }
@@ -40,6 +43,11 @@ function initPhysicsWorld() {
     gravity: new CANNON.Vec3(0, 0, 0)
   });
 
+  gameObjects = [];
+
+  playerObject = new CANNON.Body({ type: CANNON.BODY_TYPES.KINEMATIC })
+  playerObject.addShape(new CANNON.Sphere(1));
+  physicsWorld.addBody(playerObject);
 }
 
 function initGraphicsWorld() {
@@ -63,11 +71,6 @@ function initGraphicsWorld() {
 
   camera = new THREE.PerspectiveCamera(45, game_canvas.clientWidth / game_canvas.clientHeight, 1, 2000);
   camera.name = 'camera';
-  camera.position.z = 10;
-  camera.position.y = 2;
-
-  scene.add(camera);
-
 
   // Lighting
 
@@ -90,44 +93,10 @@ function initGraphicsWorld() {
  */
 function init() {
 
-  // Controls
-
-
-  let instructions = document.getElementById('instructions');
-  let blocker = document.getElementById('blocker');
-  move = false;
-
-  controls = new PointerLockControls(camera, document.body);
-
-  instructions.addEventListener('click', function () {
-
-    controls.lock();
-
-  });
-
-  controls.addEventListener('lock', function () {
-
-    instructions.style.display = 'none';
-    blocker.style.display = 'none';
-    move = true;
-  });
-
-  controls.addEventListener('unlock', function () {
-
-    blocker.style.display = 'block';
-    instructions.style.display = '';
-    move = false;
-  });
-
-  flycontrols = new FlyControls(camera, document.body);
-
-  flycontrols.autoForward = true;
-  flycontrols.movementSpeed = 10;
-
   // Debugger
 
   physicsDebugger = new CannonDebugger(scene, physicsWorld, {
-    //color: 0xff0000,
+    color: 0xff0000,
   });
 
   // Random Boxes
@@ -148,13 +117,37 @@ function init() {
       gameObjects.push(box);
 
     }
-  
-    // Collision Detection
-    const cameraGeometry = new THREE.BoxGeometry(3, 3, 3);
-    const cameraMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-    cameraCube = new THREE.Mesh(cameraGeometry, cameraMaterial);
-  
+}
 
+function initControls() {
+
+    let instructions = document.getElementById('instructions');
+    let blocker = document.getElementById('blocker');
+
+    controls = new PointerLockControls(camera, playerObject);
+    scene.add(controls.getObject());
+  
+    instructions.addEventListener('click', function () {
+  
+      controls.lock();
+  
+    });
+  
+    controls.addEventListener('lock', function () {
+  
+      instructions.style.display = 'none';
+      blocker.style.display = 'none';
+      controls.enabled = true;
+
+    });
+  
+    controls.addEventListener('unlock', function () {
+  
+      blocker.style.display = 'block';
+      instructions.style.display = '';
+      controls.enabled = false;
+
+    });
 }
 
 
@@ -166,7 +159,9 @@ function loop() {
 
   const delta = clock.getDelta();
 
-  physicsWorld.fixedStep(delta);
+  if (controls.enabled)
+    physicsWorld.step(timeStep, delta);
+
   physicsDebugger.update();
 
   gameObjects.forEach(gameObject => {
@@ -174,20 +169,10 @@ function loop() {
     gameObject.graphicsObject.quaternion.copy(gameObject.physicsObject.quaternion);
   });
 
-  if (move) {
-    flycontrols.update(delta);
-  }
-
-  render();
+  controls.update(delta);
+  renderer.render(scene, camera);
 
   requestAnimationFrame(loop);
-}
-
-/**
- *  render is used to render all parts of the game.
- */
-function render() {
-  renderer.render(scene, camera);
 }
 
 main();

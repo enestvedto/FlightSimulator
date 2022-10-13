@@ -1,7 +1,5 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
-import { Mesh } from 'three';
-import { Vec3 } from 'cannon-es';
 
 
 

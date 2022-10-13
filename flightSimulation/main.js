@@ -124,28 +124,27 @@ function init() {
 
   const boxGeometry = new THREE.BoxGeometry(2, 2, 2).toNonIndexed();
 
+  collisions = [];
+
   const objectPool = new ObjectPool(500);
   const physicsPool = new PhysicsPool(500);
 
   for (let i = 0; i < 500; i++) {
 
-    collisions = [];
 
     let box = objectPool.getObject()
     box.position.x = getRndInteger(-50, 50);
     box.position.y = getRndInteger(-50, 50);
     box.position.z = getRndInteger(-50, 50);
     
+    box.geometry.computeBoundingBox();
     box.updateMatrixWorld();
 
-    box.geometry.computeBoundingBox();
-
     let bb = physicsPool.getObject();
-    
     bb = box.geometry.boundingBox.clone();
     bb.applyMatrix4(box.matrixWorld); 
-    
-  console.log(box);
+
+    console.log(collisions);
 
     collisions.push(bb);
     scene.add(box);

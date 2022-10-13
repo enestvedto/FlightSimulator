@@ -2,6 +2,7 @@ import './style.css'
 import * as THREE from 'three';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import { FlyControls } from 'three/addons/controls/FlyControls.js';
+import {ObjectPool, PhysicsPool} from './ObjectPool.js';
 
 // Initalization of variables
 let scene, camera, renderer, controls, clock, move, flycontrols, cameraCube, collisions;
@@ -123,30 +124,31 @@ function init() {
 
   const boxGeometry = new THREE.BoxGeometry(2, 2, 2).toNonIndexed();
 
-  const objects = [];
-  collisions = [];
+  const objectPool = new ObjectPool(500);
+  const physicsPool = new PhysicsPool(500);
 
   for (let i = 0; i < 500; i++) {
 
-    const boxMaterial = new THREE.MeshStandardMaterial({
-      color: 0xFF0000,
-      emissive: 0x110000
-    });
+    collisions = [];
 
-    const box = new THREE.Mesh(boxGeometry, boxMaterial);
+    let box = objectPool.getObject()
     box.position.x = getRndInteger(-50, 50);
     box.position.y = getRndInteger(-50, 50);
     box.position.z = getRndInteger(-50, 50);
+    
+    box.updateMatrixWorld();
 
     box.geometry.computeBoundingBox();
-    box.updateMatrixWorld();
-    var bb = box.geometry.boundingBox.clone();
-    bb.applyMatrix4(box.matrixWorld);
+
+    let bb = physicsPool.getObject();
+    
+    bb = box.geometry.boundingBox.clone();
+    bb.applyMatrix4(box.matrixWorld); 
+    
+  console.log(box);
 
     collisions.push(bb);
-
     scene.add(box);
-    objects.push(box);
 
   }
 

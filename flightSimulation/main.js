@@ -1,10 +1,21 @@
 import './style.css'
 import * as THREE from 'three';
+import * as CANNON from 'cannon-es';
+import { BoxObject } from './GameObject';
+import CannonDebugger from 'cannon-es-debugger';
+
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import { FlyControls } from 'three/addons/controls/FlyControls.js';
 
 // Initalization of variables
-let scene, camera, renderer, controls, clock, move, flycontrols, cameraCube, collisions;
+let scene, camera, renderer, clock;
+
+let physicsWorld, physicsDebugger;
+
+let controls, move, flycontrols, cameraCube;
+
+let gameObjects = [];
+
 let light;
 let game_canvas = document.getElementById("myCanvas");
 
@@ -14,16 +25,25 @@ function getRndInteger(min, max) {
 
 function main() {
 
+  initPhysicsWorld();
+  initGraphicsWorld();
+
   init();
   loop();
 
 }
 
-/**
- *  init creates the objects required for the game 
- *  and initializes the scene, as well as adding DOM listeners
- */
-function init() {
+
+function initPhysicsWorld() {
+
+  physicsWorld = new CANNON.World({
+    gravity: new CANNON.Vec3(0, 0, 0)
+  });
+
+}
+
+function initGraphicsWorld() {
+
 
   // Clock
 
@@ -51,39 +71,24 @@ function init() {
 
   // Lighting
 
+
   light = new THREE.PointLight(0xFFFFFF, 1, 20, 1);
   camera.add(light);
 
-  // Geometry
-
-  let sphere = new THREE.SphereGeometry(1.5, 20, 16);
-
-  // Material
-  let materialOne = new THREE.MeshStandardMaterial({
-    color: 0x0000FF,
-    emissive: 0x0000FF
-  });
-
-  // Mesh
-  let mesh = new THREE.Mesh(sphere, materialOne);
-  scene.add(mesh);
 
   // Renderer
-
 
   renderer = new THREE.WebGLRenderer({ canvas: game_canvas });
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(game_canvas.clientWidth, game_canvas.clientHeight);
 
-  //GridHelper
+} //end of initGraphics
 
-
-  let HelperXZ = new THREE.GridHelper(100, 100);
-  scene.add(HelperXZ);
-
-  let HelperXY = new THREE.GridHelper(100, 100);
-  HelperXY.rotation.x = Math.PI / 2;
-  scene.add(HelperXY)
+/**
+ *  init creates the objects required for the game 
+ *  and initializes the scene, as well as adding DOM listeners
+ */
+function init() {
 
   // Controls
 
@@ -119,57 +124,39 @@ function init() {
   flycontrols.autoForward = true;
   flycontrols.movementSpeed = 10;
 
+  // Debugger
+
+  physicsDebugger = new CannonDebugger(scene, physicsWorld, {
+    //color: 0xff0000,
+  });
+
   // Random Boxes
 
-  const boxGeometry = new THREE.BoxGeometry(2, 2, 2).toNonIndexed();
+    gameObjects = [];
+  
+    for (let i = 0; i < 500; i++) {
+  
+      let x = getRndInteger(-50, 50);
+      let y = getRndInteger(-50, 50);
+      let z = getRndInteger(-50, 50);
 
-  const objects = [];
-  collisions = [];
+      const box = new BoxObject(undefined, undefined, new THREE.Vector3(x,y,z));
+  
+      scene.add(box.graphicsObject);
+      physicsWorld.addBody(box.physicsObject);
 
-  for (let i = 0; i < 500; i++) {
+      gameObjects.push(box);
 
-    const boxMaterial = new THREE.MeshStandardMaterial({
-      color: 0xFF0000,
-      emissive: 0x110000
-    });
-
-    const box = new THREE.Mesh(boxGeometry, boxMaterial);
-    box.position.x = getRndInteger(-50, 50);
-    box.position.y = getRndInteger(-50, 50);
-    box.position.z = getRndInteger(-50, 50);
-
-    box.geometry.computeBoundingBox();
-    box.updateMatrixWorld();
-    var bb = box.geometry.boundingBox.clone();
-    bb.applyMatrix4(box.matrixWorld);
-
-    collisions.push(bb);
-
-    scene.add(box);
-    objects.push(box);
-
-  }
-
-  // Collision Detection
-  const cameraGeometry = new THREE.BoxGeometry(3, 3, 3);
-  const cameraMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-  cameraCube = new THREE.Mesh(cameraGeometry, cameraMaterial);
-}
-
-// Function to detect collisions between the camera and random boxes
-function detectCollisions() {
-  cameraCube.position.set(camera.position.x, camera.position.y, camera.position.z);
-  cameraCube.geometry.computeBoundingBox();
-  cameraCube.updateMatrixWorld();
-  var cbb = cameraCube.geometry.boundingBox.clone();
-  cbb.applyMatrix4(cameraCube.matrixWorld);
-
-  collisions.forEach(bb => {
-    if (cbb.intersectsBox(bb)) {
-      camera.position.set(0, 0, 0);
     }
-  });
+  
+    // Collision Detection
+    const cameraGeometry = new THREE.BoxGeometry(3, 3, 3);
+    const cameraMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    cameraCube = new THREE.Mesh(cameraGeometry, cameraMaterial);
+  
+
 }
+
 
 /**
  *  loop is the main loop, responible for updating the canvas, 
@@ -179,9 +166,13 @@ function loop() {
 
   const delta = clock.getDelta();
 
-  requestAnimationFrame(loop);
+  physicsWorld.fixedStep(delta);
+  physicsDebugger.update();
 
-  detectCollisions();
+  gameObjects.forEach(gameObject => {
+    gameObject.graphicsObject.position.copy(gameObject.physicsObject.position);
+    gameObject.graphicsObject.quaternion.copy(gameObject.physicsObject.quaternion);
+  });
 
   if (move) {
     flycontrols.update(delta);
@@ -189,6 +180,7 @@ function loop() {
 
   render();
 
+  requestAnimationFrame(loop);
 }
 
 /**

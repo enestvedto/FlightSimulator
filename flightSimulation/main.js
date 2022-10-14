@@ -63,7 +63,7 @@ function initGraphics() {
 
   // Lighting
 
-  light = new THREE.PointLight(0xFFFFFF, 1, 200, 1);
+  light = new THREE.PointLight(0xFFFFFF, 1, 20, 1);
   camera.add(light);
 
   // Renderer
@@ -139,23 +139,7 @@ function initGraphics() {
 
   }
 
-  let array = [];
-
-  objects.forEach(box => {
-
-    box.geometry.computeBoundingBox();
-    box.updateMatrixWorld();
-
-    var bb = box.geometry.boundingBox;
-    bb.applyMatrix4(box.matrixWorld);
-
-    array.push(bb);
-
-  });
-
-  console.log(array);
-
-  
+  console.log(objects);
 
   // Collision Detection
   const cameraGeometry = new THREE.BoxGeometry(3, 3, 3);
@@ -164,22 +148,23 @@ function initGraphics() {
 }
 
 // Function to detect collisions between the camera and random boxes
+
 function detectCollisions() {
   cameraCube.position.set(camera.position.x, camera.position.y, camera.position.z);
   cameraCube.geometry.computeBoundingBox();
   cameraCube.updateMatrixWorld();
   
-  var cbb = cameraCube.geometry.boundingBox.clone();
+  var cbb = cameraCube.geometry.boundingBox;
   cbb.applyMatrix4(cameraCube.matrixWorld);
 
-  objects.forEach(box => {
+  for(let i = 0; i < objects.length ; i++)
+  {
+    let box = objects[i];
     box.geometry.computeBoundingBox();
     box.updateMatrixWorld();
 
     var bb = box.geometry.boundingBox;
     bb.applyMatrix4(box.matrixWorld);
-
-    console.log(cbb.intersectsBox(bb));
 
     if (cbb.intersectsBox(bb)) {
       /*box.material.uniforms.amplitude.value += 0.1;
@@ -190,13 +175,18 @@ function detectCollisions() {
       */
 
         scene.remove(box);
-        //objectPool.releaseObject(box);
-        //objects.splice(box, 1);
-        console.log(bb, objectPool.freeObjects.length);
+        objectPool.releaseObject(box);
+
+        let idx = objects.indexOf(box);
+        objects.splice(idx, 1);
+        
+        console.log(box.geometry.boundingBox, objectPool.freeObjects.length);
+        console.log(objects);
+        i--;
 
     } 
 
-  });
+  }
 } //end of detectCollisions
 
 let delta = 0;

@@ -103,8 +103,6 @@ function initGraphics() {
 
   }
 
-  console.log(objects);
-
   // Collision Detection
   const cameraGeometry = new THREE.BoxGeometry(3, 3, 3);
   const cameraMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
@@ -118,7 +116,7 @@ function detectCollisions() {
   cameraCube.geometry.computeBoundingBox();
   cameraCube.updateMatrixWorld();
 
-  var cbb = cameraCube.geometry.boundingBox.clone();
+  var cbb = cameraCube.geometry.boundingBox;
   cbb.applyMatrix4(cameraCube.matrixWorld);
 
   for (let i = 0; i < objects.length; i++) {
@@ -126,7 +124,7 @@ function detectCollisions() {
     box.geometry.computeBoundingBox();
     box.updateMatrixWorld();
 
-    var bb = box.geometry.boundingBox.clone();
+    var bb = box.geometry.boundingBox;
     bb.applyMatrix4(box.matrixWorld);
 
     if (cbb.intersectsBox(bb)) {
@@ -140,8 +138,6 @@ function detectCollisions() {
         let idx = objects.indexOf(box);
         objects.splice(idx, 1);
 
-        console.log(box.geometry.boundingBox, objectPool.freeObjects.length);
-        console.log(objects);
         i--;
       }
     }
@@ -248,9 +244,6 @@ function recycleObjects() {
 
       let idx = objects.indexOf(box);
       objects.splice(idx, 1);
-
-      console.log(box.geometry.boundingBox, objectPool.freeObjects.length);
-      console.log(objects);
 
       i--;
     }

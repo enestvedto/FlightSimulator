@@ -10,11 +10,6 @@ export class ObjectPool {
     freeObjects = [];
     lockedObjects = [];
 
-    /*
-        defaultMaterial = new THREE.MeshStandardMaterial({
-            color: 0xFF0000,
-            emissive: 0x110000
-        });*/
 
     constructor(poolSize = 10) {
         this.poolSize = poolSize;

@@ -1,9 +1,10 @@
-import './style.css'
+import './style.css';
 import * as THREE from 'three';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import { FlyControls } from 'three/addons/controls/FlyControls.js';
 import { TessellateModifier } from 'three/examples/jsm/modifiers/TessellateModifier';
 import { ObjectPool } from './ObjectPool';
+import { Vector3 } from 'three';
 
 // Initalization of variables
 let scene, camera, renderer, controls, clock;
@@ -86,10 +87,10 @@ function initGraphics() {
   // Particle explosion
   // Random Boxes
 
-  objectPool = new ObjectPool(10);
+  objectPool = new ObjectPool(500);
   objects = [];
 
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 500; i++) {
 
     const box = objectPool.getObject();
 
@@ -207,7 +208,70 @@ function loop() {
     flycontrols.update(deltaTime);
   }
 
+  recycleObjects();
+
   renderer.render(scene, camera);
+
+}
+
+/**
+ * Gets the distance from o1 to o2
+ * @param {THREE.Mesh} o1 
+ * @param {THREE.Mesh} o2 
+ */
+function getDistance(o1, o2) {
+  let c1 = new Vector3();
+  let c2 = new Vector3(); 
+  
+  o1.geometry.boundingBox.getCenter(c1);
+  o2.geometry.boundingBox.getCenter(c2);
+  
+  return c1.distanceTo(c2);
+  
+}
+
+function recycleObjects() {
+
+  //remove objects farther than 100 units
+
+  for (let i = 0; i < objects.length; i++)
+  {
+    
+    let box = objects[i];
+
+    if (getDistance(cameraCube, box) > 65)
+    {
+
+      objectPool.releaseObject(box);
+
+      scene.remove(box);
+
+      let idx = objects.indexOf(box);
+      objects.splice(idx, 1);
+
+      console.log(box.geometry.boundingBox, objectPool.freeObjects.length);
+      console.log(objects);
+
+      i--;
+    }
+  }
+
+  //place objects in new locations
+
+  let box = objectPool.getObject();
+
+  while (box != undefined)
+  {
+
+    box.position.x = getRndInteger(-50, 50) + cameraCube.position.x;
+    box.position.y = getRndInteger(-50, 50) + cameraCube.position.y;
+    box.position.z = getRndInteger(-50, 50) + cameraCube.position.z;
+
+    scene.add(box);
+    objects.push(box);
+
+    box = objectPool.getObject();
+  }
 
 }
 

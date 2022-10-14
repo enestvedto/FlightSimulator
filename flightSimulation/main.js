@@ -13,7 +13,6 @@ let objects, objectPool, cameraCube;
 let move, flycontrols;
 
 let light;
-let customUniforms;
 
 let game_canvas = document.getElementById("myCanvas");
 
@@ -35,7 +34,6 @@ function main() {
  *  and initializes the scene, as well as adding DOM listeners
  */
 function initGraphics() {
-  const tessellateModifier = new TessellateModifier(0.2, 5);
 
   // Clock
 
@@ -95,44 +93,9 @@ function initGraphics() {
 
     const box = objectPool.getObject();
 
-
-    /*
-
-    boxGeometry = tessellateModifier.modify(boxGeometry);
-
-    
-    const numFaces = boxGeometry.attributes.position.count / 3;
-    const displacement = new Float32Array(numFaces * 3 * 3);
-    
-    for (let f = 0; f < numFaces; f++) {
-      const index = 9 * f;
-      const d = 10 * (0.5 - Math.random());
-
-      for (let i = 0; i < 3; i++) {
-        displacement[index + (3 * i)] = d;
-        displacement[index + (3 * i) + 1] = d;
-        displacement[index + (3 * i) + 2] = d;
-      }
-    }
-    boxGeometry.setAttribute('displacement', new THREE.BufferAttribute(displacement, 3));
-
-
-    customUniforms = {
-      amplitude: { value: 0.0 },
-      delta: { value: 0 },
-    };
-
-    var boxMaterial = new THREE.ShaderMaterial({
-      uniforms: customUniforms,
-      vertexShader: document.getElementById('vertexShader').textContent,
-    });
-
-    */
-
     box.position.x = getRndInteger(-25, 25);
     box.position.y = getRndInteger(-25, 25);
     box.position.z = getRndInteger(-25, 25);
-    //boxGeometry = tessellateModifier.modify(boxGeometry);
 
     scene.add(box);
     objects.push(box);
@@ -154,7 +117,7 @@ function detectCollisions() {
   cameraCube.geometry.computeBoundingBox();
   cameraCube.updateMatrixWorld();
 
-  var cbb = cameraCube.geometry.boundingBox;
+  var cbb = cameraCube.geometry.boundingBox.clone();
   cbb.applyMatrix4(cameraCube.matrixWorld);
 
   for (let i = 0; i < objects.length; i++) {
@@ -162,27 +125,24 @@ function detectCollisions() {
     box.geometry.computeBoundingBox();
     box.updateMatrixWorld();
 
-    var bb = box.geometry.boundingBox;
+    var bb = box.geometry.boundingBox.clone();
     bb.applyMatrix4(box.matrixWorld);
 
     if (cbb.intersectsBox(bb)) {
-      /*box.material.uniforms.amplitude.value += 0.1;
+      box.material.uniforms.amplitude.value += 0.1;
       if (box.material.uniforms.amplitude.value > 1) {
         scene.remove(box);
         box.material.uniforms.amplitude.value = 0;
+
+        objectPool.releaseObject(box);
+
+        let idx = objects.indexOf(box);
+        objects.splice(idx, 1);
+
+        console.log(box.geometry.boundingBox, objectPool.freeObjects.length);
+        console.log(objects);
+        i--;
       }
-      */
-
-      scene.remove(box);
-      objectPool.releaseObject(box);
-
-      let idx = objects.indexOf(box);
-      objects.splice(idx, 1);
-
-      console.log(box.geometry.boundingBox, objectPool.freeObjects.length);
-      console.log(objects);
-      i--;
-
     }
 
   }
@@ -233,9 +193,9 @@ function initControls() {
 function loop() {
   delta += 0.3;
 
-  /*objects.forEach(box => {
+  objects.forEach(box => {
     box.material.uniforms.delta.value = Math.sin(delta);
-  }); */
+  });
 
   detectCollisions();
 

@@ -2,7 +2,6 @@ import './style.css';
 import * as THREE from 'three';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import { FlyControls } from 'three/addons/controls/FlyControls.js';
-import { TessellateModifier } from 'three/examples/jsm/modifiers/TessellateModifier';
 import { ObjectPool } from './ObjectPool';
 import { Vector3 } from 'three';
 
@@ -86,11 +85,11 @@ function initGraphics() {
 
   // Particle explosion
   // Random Boxes
-
-  objectPool = new ObjectPool(500);
+  var numObjects = 50;
+  objectPool = new ObjectPool(numObjects);
   objects = [];
 
-  for (let i = 0; i < 500; i++) {
+  for (let i = 0; i < numObjects; i++) {
 
     const box = objectPool.getObject();
 
@@ -137,7 +136,6 @@ function detectCollisions() {
 
         let idx = objects.indexOf(box);
         objects.splice(idx, 1);
-
         i--;
       }
     }
@@ -217,26 +215,24 @@ function loop() {
  */
 function getDistance(o1, o2) {
   let c1 = new Vector3();
-  let c2 = new Vector3(); 
-  
+  let c2 = new Vector3();
+
   o1.geometry.boundingBox.getCenter(c1);
   o2.geometry.boundingBox.getCenter(c2);
-  
+
   return c1.distanceTo(c2);
-  
+
 }
 
 function recycleObjects() {
 
   //remove objects farther than 100 units
 
-  for (let i = 0; i < objects.length; i++)
-  {
-    
+  for (let i = 0; i < objects.length; i++) {
+
     let box = objects[i];
 
-    if (getDistance(cameraCube, box) > 65)
-    {
+    if (getDistance(cameraCube, box) > 65) {
 
       objectPool.releaseObject(box);
 
@@ -253,8 +249,7 @@ function recycleObjects() {
 
   let box = objectPool.getObject();
 
-  while (box != undefined)
-  {
+  while (box != undefined) {
 
     box.position.x = getRndInteger(-50, 50) + cameraCube.position.x;
     box.position.y = getRndInteger(-50, 50) + cameraCube.position.y;

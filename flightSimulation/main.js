@@ -85,11 +85,11 @@ function initGraphics() {
 
   // Particle explosion
   // Random Boxes
-
-  objectPool = new ObjectPool(10);
+  var numObjects = 50;
+  objectPool = new ObjectPool(numObjects);
   objects = [];
 
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < numObjects; i++) {
 
     const box = objectPool.getObject();
 
@@ -101,8 +101,6 @@ function initGraphics() {
     objects.push(box);
 
   }
-
-  console.log(objects);
 
   // Collision Detection
   const cameraGeometry = new THREE.BoxGeometry(3, 3, 3);
@@ -138,9 +136,6 @@ function detectCollisions() {
 
         let idx = objects.indexOf(box);
         objects.splice(idx, 1);
-
-        console.log(box.geometry.boundingBox, objectPool.freeObjects.length);
-        console.log(objects);
         i--;
       }
     }
@@ -194,10 +189,10 @@ function loop() {
   delta += 0.3;
 
   objects.forEach(box => {
-    box.material.uniforms.delta.value = Math.sin(delta);
+    //box.material.uniforms.delta.value = Math.sin(delta);
   });
 
-  detectCollisions();
+  //detectCollisions();
 
   const deltaTime = clock.getDelta();
 

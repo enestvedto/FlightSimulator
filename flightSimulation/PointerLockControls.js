@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import * as CANNON from 'cannon-es'
 
 /**
+ * My attempt to use a custom controller
  * @author mrdoob / http://mrdoob.com/
  * @author schteppe / https://github.com/schteppe
  */
@@ -27,11 +28,9 @@ class PointerLockControls extends THREE.EventDispatcher {
     this.quaternion = new THREE.Quaternion()
 
     this.moveForward = false
-    this.moveBackward = false
-    this.moveLeft = false
-    this.moveRight = false
 
-    this.canJump = false
+    this.horizontalSensitivity = 0.002;
+    this.verticalSensitivity = 0.002;
 
     const contactNormal = new CANNON.Vec3() // Normal in the contact, pointing *out* of whatever the player touched
     const upAxis = new CANNON.Vec3(0, 1, 0)
@@ -49,10 +48,7 @@ class PointerLockControls extends THREE.EventDispatcher {
       }
 
       // If contactNormal.dot(upAxis) is between 0 and 1, we know that the contact normal is somewhat in the up direction.
-      if (contactNormal.dot(upAxis) > 0.5) {
-        // Use a "good" threshold value between 0 and 1 here!
-        this.canJump = true
-      }
+
     })
 
     this.velocity = this.cannonBody.velocity
@@ -118,8 +114,8 @@ class PointerLockControls extends THREE.EventDispatcher {
 
     const { movementX, movementY } = event
 
-    this.yawObject.rotation.y -= movementX * 0.002
-    this.pitchObject.rotation.x -= movementY * 0.002
+    this.yawObject.rotation.y -= movementX * this.horizontalSensitivity;
+    this.pitchObject.rotation.x -= movementY * this.verticalSensitivity;
 
     this.pitchObject.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, this.pitchObject.rotation.x))
   }
@@ -160,8 +156,9 @@ class PointerLockControls extends THREE.EventDispatcher {
 
     this.inputVelocity.set(0, 0, 0)
 
+    // Calculate local velocity 
     if (this.moveForward) {
-      this.inputVelocity.z = -this.velocityFactor * delta
+      this.inputVelocity.z = -this.velocityFactor * delta;
     }
 
     // Convert velocity to world coordinates
@@ -172,9 +169,13 @@ class PointerLockControls extends THREE.EventDispatcher {
     this.inputVelocity.applyQuaternion(this.quaternion)
 
     // Add to the object
+    
     this.velocity.x += this.inputVelocity.x 
+    this.velocity.y += this.inputVelocity.y
     this.velocity.z += this.inputVelocity.z 
 
+    console.log(this.euler);
+    
     this.yawObject.position.copy(this.cannonBody.position)
   }
 }

@@ -3,12 +3,18 @@ import * as THREE from 'three';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import { FlyControls } from 'three/addons/controls/FlyControls.js';
 import { TessellateModifier } from 'three/examples/jsm/modifiers/TessellateModifier';
+import { ObjectPool } from './ObjectPool';
 
 // Initalization of variables
-let scene, camera, renderer, controls, clock, move, flycontrols, cameraCube, objects;
+let scene, camera, renderer, controls, clock;
+
+let objects, objectPool, cameraCube;
+
+let move, flycontrols;
+
 let light;
 let customUniforms;
-let mesh;
+
 let game_canvas = document.getElementById("myCanvas");
 
 function getRndInteger(min, max) {
@@ -17,7 +23,9 @@ function getRndInteger(min, max) {
 
 function main() {
 
-  init();
+  initGraphics();
+
+  initControls();
   loop();
 
 }
@@ -26,7 +34,7 @@ function main() {
  *  init creates the objects required for the game 
  *  and initializes the scene, as well as adding DOM listeners
  */
-function init() {
+function initGraphics() {
   const tessellateModifier = new TessellateModifier(0.2, 5);
 
   // Clock
@@ -55,24 +63,8 @@ function init() {
 
   // Lighting
 
-  light = new THREE.PointLight(0xFFFFFF, 1, 20, 1);
+  light = new THREE.PointLight(0xFFFFFF, 1, 200, 1);
   camera.add(light);
-
-  // Geometry
-
-  let sphere = new THREE.SphereGeometry(1.5, 20, 16);
-
-  // Material
-  let materialOne = new THREE.MeshStandardMaterial({
-    color: 0x0000FF,
-    emissive: 0x0000FF
-  });
-
-  // Mesh
-
-
-  mesh = new THREE.Mesh(sphere, materialOne);
-  scene.add(mesh);
 
   // Renderer
 
@@ -81,7 +73,7 @@ function init() {
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(game_canvas.clientWidth, game_canvas.clientHeight);
 
-  //GridHelper
+  /*GridHelper
 
 
   let HelperXZ = new THREE.GridHelper(100, 100);
@@ -91,58 +83,27 @@ function init() {
   HelperXY.rotation.x = Math.PI / 2;
   scene.add(HelperXY)
 
-  // Controls
-
-
-  let instructions = document.getElementById('instructions');
-  let blocker = document.getElementById('blocker');
-  move = false;
-
-  controls = new PointerLockControls(camera, document.body);
-
-  instructions.addEventListener('click', function () {
-
-    controls.lock();
-
-  });
-
-  controls.addEventListener('lock', function () {
-
-    instructions.style.display = 'none';
-    blocker.style.display = 'none';
-    move = true;
-  });
-
-  controls.addEventListener('unlock', function () {
-
-    blocker.style.display = 'block';
-    instructions.style.display = '';
-    move = false;
-  });
-
-  flycontrols = new FlyControls(camera, document.body);
-
-  flycontrols.autoForward = true;
-  flycontrols.movementSpeed = 10;
+  */
 
   // Particle explosion
   // Random Boxes
 
-  var boxGeometry = new THREE.BoxGeometry(2, 2, 2).toNonIndexed();
-
+  objectPool = new ObjectPool(10);
   objects = [];
 
-  for (let i = 0; i < 500; i++) {
+  for (let i = 0; i < 10; i++) {
+
+    const box = objectPool.getObject();
+    
+
     /*
-        const boxMaterial = new THREE.MeshStandardMaterial({
-          color: 0xFF0000,
-          emissive: 0x110000
-        });
-        */
+
     boxGeometry = tessellateModifier.modify(boxGeometry);
 
+    
     const numFaces = boxGeometry.attributes.position.count / 3;
     const displacement = new Float32Array(numFaces * 3 * 3);
+    
     for (let f = 0; f < numFaces; f++) {
       const index = 9 * f;
       const d = 10 * (0.5 - Math.random());
@@ -166,16 +127,35 @@ function init() {
       vertexShader: document.getElementById('vertexShader').textContent,
     });
 
-    const box = new THREE.Mesh(boxGeometry, boxMaterial);
-    box.position.x = getRndInteger(-50, 50);
-    box.position.y = getRndInteger(-50, 50);
-    box.position.z = getRndInteger(-50, 50);
-    boxGeometry = tessellateModifier.modify(boxGeometry);
+    */
+
+    box.position.x = getRndInteger(-25, 25);
+    box.position.y = getRndInteger(-25, 25);
+    box.position.z = getRndInteger(-25, 25);
+    //boxGeometry = tessellateModifier.modify(boxGeometry);
 
     scene.add(box);
     objects.push(box);
 
   }
+
+  let array = [];
+
+  objects.forEach(box => {
+
+    box.geometry.computeBoundingBox();
+    box.updateMatrixWorld();
+
+    var bb = box.geometry.boundingBox;
+    bb.applyMatrix4(box.matrixWorld);
+
+    array.push(bb);
+
+  });
+
+  console.log(array);
+
+  
 
   // Collision Detection
   const cameraGeometry = new THREE.BoxGeometry(3, 3, 3);
@@ -188,36 +168,85 @@ function detectCollisions() {
   cameraCube.position.set(camera.position.x, camera.position.y, camera.position.z);
   cameraCube.geometry.computeBoundingBox();
   cameraCube.updateMatrixWorld();
+  
   var cbb = cameraCube.geometry.boundingBox.clone();
   cbb.applyMatrix4(cameraCube.matrixWorld);
 
   objects.forEach(box => {
     box.geometry.computeBoundingBox();
     box.updateMatrixWorld();
-    var bb = box.geometry.boundingBox.clone();
+
+    var bb = box.geometry.boundingBox;
     bb.applyMatrix4(box.matrixWorld);
+
+    console.log(cbb.intersectsBox(bb));
+
     if (cbb.intersectsBox(bb)) {
-      box.material.uniforms.amplitude.value += 0.1;
+      /*box.material.uniforms.amplitude.value += 0.1;
       if (box.material.uniforms.amplitude.value > 1) {
         scene.remove(box);
         box.material.uniforms.amplitude.value = 0;
       }
-    }
+      */
+
+        scene.remove(box);
+        //objectPool.releaseObject(box);
+        //objects.splice(box, 1);
+        console.log(bb, objectPool.freeObjects.length);
+
+    } 
 
   });
-}
+} //end of detectCollisions
+
+let delta = 0;
+
+function initControls() {
+  
+    let instructions = document.getElementById('instructions');
+    let blocker = document.getElementById('blocker');
+
+    move = false;
+  
+    controls = new PointerLockControls(camera, document.body);
+  
+    instructions.addEventListener('click', function () {
+  
+      controls.lock();
+  
+    });
+  
+    controls.addEventListener('lock', function () {
+  
+      instructions.style.display = 'none';
+      blocker.style.display = 'none';
+      move = true;
+    });
+  
+    controls.addEventListener('unlock', function () {
+  
+      blocker.style.display = 'block';
+      instructions.style.display = '';
+      move = false;
+    });
+  
+    flycontrols = new FlyControls(camera, document.body);
+  
+    flycontrols.autoForward = true;
+    flycontrols.movementSpeed = 10;
+
+}// end of initControls
 
 /**
  *  loop is the main loop, responible for updating the canvas, 
  *  resetting the puzzle when complete.
  */
-var delta = 0;
-
 function loop() {
   delta += 0.3;
-  objects.forEach(box => {
+
+  /*objects.forEach(box => {
     box.material.uniforms.delta.value = Math.sin(delta);
-  });
+  }); */
 
   detectCollisions();
 
@@ -225,20 +254,12 @@ function loop() {
 
   requestAnimationFrame(loop);
 
-  //detectCollisions();
-
   if (move) {
     flycontrols.update(deltaTime);
   }
-  render();
 
-}
-
-/**
- *  render is used to render all parts of the game.
- */
-function render() {
   renderer.render(scene, camera);
+
 }
 
 main();

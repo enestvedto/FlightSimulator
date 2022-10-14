@@ -192,6 +192,8 @@ function detectCollisions() {
   cbb.applyMatrix4(cameraCube.matrixWorld);
 
   objects.forEach(box => {
+    // add here for resetting object pool stuff
+    //box.material.uniforms.amplitude.value = 0;
     box.geometry.computeBoundingBox();
     box.updateMatrixWorld();
     var bb = box.geometry.boundingBox.clone();
@@ -224,8 +226,6 @@ function loop() {
   const deltaTime = clock.getDelta();
 
   requestAnimationFrame(loop);
-
-  //detectCollisions();
 
   if (move) {
     flycontrols.update(deltaTime);

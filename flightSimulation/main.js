@@ -2,7 +2,6 @@ import './style.css';
 import * as THREE from 'three';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import { FlyControls } from 'three/addons/controls/FlyControls.js';
-import { TessellateModifier } from 'three/examples/jsm/modifiers/TessellateModifier';
 import { ObjectPool } from './ObjectPool';
 import { Vector3 } from 'three';
 
@@ -190,10 +189,10 @@ function loop() {
   delta += 0.3;
 
   objects.forEach(box => {
-    //box.material.uniforms.delta.value = Math.sin(delta);
+    box.material.uniforms.delta.value = Math.sin(delta);
   });
 
-  //detectCollisions();
+  detectCollisions();
 
   const deltaTime = clock.getDelta();
 

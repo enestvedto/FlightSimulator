@@ -67,18 +67,19 @@ export class ObjectPool {
                 amplitude: { value: 0.0 },
                 delta: { value: 0 },
             };
-            /*
-                        var defaultMaterial = new THREE.ShaderMaterial({
-                            uniforms: customUniforms,
-                            vertexShader: document.getElementById('vertexShader').textContent,
-                        });
-            */
-            var rndColor = this.getRandomColor();
-            var defaultMaterial = new THREE.MeshStandardMaterial({
-                color: rndColor,
-                emissive: 0x110000
+
+            var defaultMaterial = new THREE.ShaderMaterial({
+                uniforms: customUniforms,
+                vertexShader: document.getElementById('vertexShader').textContent,
             });
 
+            /*
+             var rndColor = this.getRandomColor();
+             var defaultMaterial = new THREE.MeshStandardMaterial({
+                 color: rndColor,
+                 emissive: 0x110000
+             });
+ */
             let box = new THREE.Mesh(randomGeometry.clone(), defaultMaterial);
             this.freeObjects.push(box);
 

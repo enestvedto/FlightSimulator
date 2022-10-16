@@ -63,15 +63,27 @@ export class ObjectPool {
 
             randomGeometry.setAttribute('displacement', new THREE.BufferAttribute(displacement, 3));
 
+            const count = randomGeometry.attributes.position.count;
+            const randoms = new Float32Array(count);
+            for (let i = 0; i < count; i++) {
+                randoms[i] = Math.random();
+            }
+            randomGeometry.setAttribute('aRandom', new THREE.BufferAttribute(randoms, 1));
+
             var customUniforms = {
                 amplitude: { value: 0.0 },
                 delta: { value: 0 },
+                uColor: { value: new THREE.Color(0x31c48D) },
+                uColor1: { value: new THREE.Color(0x6C63FF) }
             };
 
             var defaultMaterial = new THREE.ShaderMaterial({
                 uniforms: customUniforms,
                 vertexShader: document.getElementById('vertexShader').textContent,
+                fragmentShader: document.getElementById('fragShader').textContent,
             });
+            defaultMaterial.blending = THREE.CustomBlending;
+            defaultMaterial.blendEquation = THREE.AddEquation;
 
             /*
              var rndColor = this.getRandomColor();

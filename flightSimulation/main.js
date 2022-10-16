@@ -143,8 +143,6 @@ function detectCollisions() {
   }
 } //end of detectCollisions
 
-let delta = 0;
-
 function initControls() {
 
   let instructions = document.getElementById('instructions');
@@ -186,20 +184,23 @@ function initControls() {
  *  resetting the puzzle when complete.
  */
 function loop() {
-  delta += 0.3;
 
-  objects.forEach(box => {
-    box.material.uniforms.delta.value = Math.sin(delta);
+  const deltaTime = clock.getDelta();
+
+  const elapsedTime = clock.getElapsedTime();
+
+  objects.forEach(item => {
+    item.material.uniforms.delta.value = elapsedTime;
+    item.rotation.x += Math.random() * 0.01;
+    item.rotation.y += Math.random() * 0.01;
   });
 
   detectCollisions();
 
-  const deltaTime = clock.getDelta();
-
   requestAnimationFrame(loop);
 
   if (move) {
-    flycontrols.update(deltaTime);
+    flycontrols.update(deltaTime * .5);
   }
 
   recycleObjects();

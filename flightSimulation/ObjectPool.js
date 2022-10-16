@@ -85,13 +85,17 @@ export class ObjectPool {
             defaultMaterial.blending = THREE.CustomBlending;
             defaultMaterial.blendEquation = THREE.AddEquation;
 
-            /*
-             var rndColor = this.getRandomColor();
-             var defaultMaterial = new THREE.MeshStandardMaterial({
-                 color: rndColor,
-                 emissive: 0x110000
-             });
- */
+
+            var rndColor = this.getRandomColor();
+            var defaultMaterialWithLight = new THREE.MeshStandardMaterial({
+                color: rndColor,
+                emissive: 0x110000
+            });
+            defaultMaterialWithLight.blending = THREE.CustomBlending;
+            defaultMaterialWithLight.blendEquation = THREE.AddEquation;
+            defaultMaterialWithLight.blendSrc = THREE.SrcAlphaFactor;
+            defaultMaterialWithLight.blendDst = THREE.OneMinusDstAlphaFactor;
+
             let box = new THREE.Mesh(randomGeometry.clone(), defaultMaterial);
             this.freeObjects.push(box);
 

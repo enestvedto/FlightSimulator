@@ -80,6 +80,10 @@ export class ObjectPool {
                 uColor1: { value: new THREE.Color(0x6C63FF) },
                 u_resolution: { type: "v2", value: new THREE.Vector2() },
             };
+            var rndColor1 = this.getRandomColor();
+            var rndColor2 = this.getRandomColor();
+            customUniforms.uColor.value = new THREE.Color(rndColor1);
+            customUniforms.uColor1.value = new THREE.Color(rndColor2);
 
             var defaultMaterial = new THREE.ShaderMaterial({
                 uniforms: customUniforms,

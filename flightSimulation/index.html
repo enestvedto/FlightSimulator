@@ -33,12 +33,7 @@
 
       vec3 newPos = position;
 
-      //newPos.x += sin(delta * aRandom);
-      //newPos.y += cos(delta * aRandom);
-      //newPos.z += cos(delta * aRandom);
-
       newPos = newPos + normal * amplitude * displacement;
-      
 
       gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(newPos, 1.0);
       
@@ -53,11 +48,13 @@
 
     void main(){
       float depth = vPosition.x;
-      vec2 st = gl_FragCoord.xy/u_resolution.xy;
+      vec2 st = gl_FragCoord.xy / u_resolution.xy;
 
-      //vec3 mixedColor = mix(st.x, st.y, depth);
-      gl_FragColor=vec4(st.x,st.y,0.75,1.0);
-      //gl_FragColor = vec4(mixedColor, 1.0);
+      //gl_FragColor=vec4(vPosition.x,st.y,0.75,1.0);
+
+      // removed gradient
+      //vec3 mixedColor = mix(uColor, uColor1, depth);
+      gl_FragColor = vec4(uColor, 1.0);
     }
   </script>
 

@@ -287,41 +287,6 @@ function render() {
 
 }
 
-// Function to detect collisions between the camera and random boxes
-
-function detectCollisions() {
-  cameraCube.position.set(frontCamera.position.x, frontCamera.position.y, frontCamera.position.z);
-  cameraCube.geometry.computeBoundingBox();
-  cameraCube.updateMatrixWorld();
-
-  var cbb = cameraCube.geometry.boundingBox;
-  cbb.applyMatrix4(cameraCube.matrixWorld);
-
-  for (let i = 0; i < objects.length; i++) {
-    let box = objects[i];
-    box.geometry.computeBoundingBox();
-    box.updateMatrixWorld();
-
-    var bb = box.geometry.boundingBox;
-    bb.applyMatrix4(box.matrixWorld);
-
-    if (cbb.intersectsBox(bb)) {
-      box.material.uniforms.amplitude.value += 0.1;
-      if (box.material.uniforms.amplitude.value > 1) {
-        scene.remove(box);
-        box.material.uniforms.amplitude.value = 0;
-
-        objectPool.releaseObject(box);
-
-        let idx = objects.indexOf(box);
-        objects.splice(idx, 1);
-        i--;
-      }
-    }
-
-  }
-} //end of detectCollisions
-
 /**
  * Gets the distance from o1 to o2
  * @param {THREE.Mesh} o1 

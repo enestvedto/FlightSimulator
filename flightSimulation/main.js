@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import { FlyControls } from 'three/addons/controls/FlyControls.js';
 import { ObjectPool } from './ObjectPool';
-import { Vector3 } from 'three';
+import { Vector3, Vector4 } from 'three';
 import { ScissorTool } from './ScissorTool';
 
 // Initalization of variables
@@ -129,6 +129,30 @@ function initGraphics() {
   cameraCube = new THREE.Mesh(cameraGeometry, cameraMaterial);
 }
 
+/**
+ * Updates the the scenes objects a timestep of delta
+ * @param {number} delta -> time since last step
+ */
+function updateWorld(delta) {
+  for (let i = 0; i < objects.length; i++) {
+    let object = objects[i];
+    let velocity = object.userData['velocity'].clone(); //clone to not overwrite
+    let oldRotation = object.userData['rotation'];
+    let newRotation = oldRotation.clone();
+
+    velocity.multiplyScalar(delta);
+    object.position.add(velocity);
+
+    /*
+    newRotation.multiplyScalar(delta);  NEEED TO FIX SO ROTATION OCCURS
+    newRotation.add(oldRotation);
+    
+    object.rotation.setFromVector3(newRotation);
+    */
+  }
+}
+
+
 // Function to detect collisions between the camera and random boxes
 
 function detectCollisions() {
@@ -207,8 +231,9 @@ function initControls() {
 function loop() {
 
   const deltaTime = clock.getDelta();
-
   const elapsedTime = clock.getElapsedTime();
+
+  updateWorld(deltaTime);
 
   objects.forEach(item => {
     item.material.uniforms.delta.value = elapsedTime;

@@ -1,4 +1,7 @@
 import * as THREE from 'three';
+import { MathUtils } from 'three';
+
+import { Vector3 } from 'three';
 import { TessellateModifier } from 'three/examples/jsm/modifiers/TessellateModifier';
 
 
@@ -40,7 +43,7 @@ export class ObjectPool {
         var toG = new THREE.TorusGeometry(2, 1, 16, 100);
         var torusGeometry = tessellateModifier.modify(toG);
         geometries.push(torusGeometry);
-
+        
 
         for (let i = 0; i < poolSize; i++) {
 
@@ -96,8 +99,14 @@ export class ObjectPool {
             defaultMaterialWithLight.blendSrc = THREE.SrcAlphaFactor;
             defaultMaterialWithLight.blendDst = THREE.OneMinusDstAlphaFactor;
 
-            let box = new THREE.Mesh(randomGeometry.clone(), defaultMaterial);
-            this.freeObjects.push(box);
+            let obj = new THREE.Mesh(randomGeometry.clone(), defaultMaterial);
+
+            //allows object movement
+            obj.userData = {};
+            obj.userData['velocity'] = new THREE.Vector3(MathUtils.randFloatSpread(4), MathUtils.randFloatSpread(4), MathUtils.randFloatSpread(4) );
+            obj.userData['rotation'] = new THREE.Vector3(MathUtils.randFloatSpread(Math.PI), MathUtils.randFloatSpread(Math.PI), MathUtils.randFloatSpread(Math.PI) );
+
+            this.freeObjects.push(obj);
 
         }
     }

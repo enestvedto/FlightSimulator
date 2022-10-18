@@ -5,6 +5,7 @@ import { FlyControls } from 'three/addons/controls/FlyControls.js';
 import { ObjectPool } from './ObjectPool';
 import { Vector3, Vector4 } from 'three';
 import { ScissorTool } from './ScissorTool';
+import { MathUtils } from 'three';
 
 // Initalization of variables
 let scene, frontCamera, rearCamera, renderer, controls, clock;
@@ -304,6 +305,8 @@ function recycleObjects() {
     box.position.x = getRndInteger(-50, 50) + cameraCube.position.x;
     box.position.y = getRndInteger(-50, 50) + cameraCube.position.y;
     box.position.z = getRndInteger(-50, 50) + cameraCube.position.z;
+
+    box.userData.velocity = new THREE.Vector3(MathUtils.randFloatSpread(4), MathUtils.randFloatSpread(4), MathUtils.randFloatSpread(4));
 
     scene.add(box);
     objects.push(box);

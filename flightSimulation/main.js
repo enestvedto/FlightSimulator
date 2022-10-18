@@ -17,6 +17,9 @@ let move, flycontrols;
 
 let light;
 
+let damage = document.getElementById('collision');
+damage.style.display = 'none';
+
 let game_canvas = document.getElementById("myCanvas");
 
 function getRndInteger(min, max) {
@@ -175,6 +178,7 @@ function detectCollisions() {
     bb.applyMatrix4(box.matrixWorld);
 
     if (cbb.intersectsBox(bb)) {
+      damageShip();
       box.material.uniforms.amplitude.value += 0.1;
       if (box.material.uniforms.amplitude.value > 1) {
         scene.remove(box);
@@ -190,6 +194,16 @@ function detectCollisions() {
 
   }
 } //end of detectCollisions
+
+async function damageShip() {
+  damage.style.display = 'block';
+  await delay(50);
+  damage.style.display = 'none';
+}
+
+function delay(time) {
+  return new Promise(resolve => setTimeout(resolve, time));
+}
 
 function initControls() {
 
@@ -240,8 +254,8 @@ function loop() {
 
   objects.forEach(item => {
     item.material.uniforms.delta.value = elapsedTime;
-    item.rotation.x += Math.random() * 0.01;
-    item.rotation.y += Math.random() * 0.01;
+    item.rotation.x += Math.sin(elapsedTime) * 0.02;
+    item.rotation.y += Math.cos(elapsedTime) * 0.02;
   });
 
   detectCollisions();

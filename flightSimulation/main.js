@@ -4,9 +4,12 @@ import { PointerLockControls } from 'three/addons/controls/PointerLockControls.j
 import { FlyControls } from 'three/addons/controls/FlyControls.js';
 import { ObjectPool } from './ObjectPool';
 import { Vector3 } from 'three';
+import { ScissorTool } from './ScissorTool';
 
 // Initalization of variables
-let scene, camera, renderer, controls, clock;
+let scene, frontCamera, rearCamera, renderer, controls, clock;
+
+let scissorTool;
 
 let objects, objectPool, cameraCube;
 
@@ -51,18 +54,24 @@ function initGraphics() {
   // Camera
 
 
-  camera = new THREE.PerspectiveCamera(45, game_canvas.clientWidth / game_canvas.clientHeight, 1, 2000);
-  camera.name = 'camera';
-  camera.position.z = 10;
-  camera.position.y = 2;
+  frontCamera = new THREE.PerspectiveCamera(45, game_canvas.clientWidth / game_canvas.clientHeight, 1, 2000);
+  frontCamera.name = 'frontCamera';
+  frontCamera.position.z = 10;
+  frontCamera.position.y = 2;
 
-  scene.add(camera);
+  scene.add(frontCamera);
+
+  rearCamera = new THREE.PerspectiveCamera(45, game_canvas.clientWidth / game_canvas.clientHeight, 1, 2000);
+  rearCamera.rotation.y = Math.PI;
+  rearCamera.name = 'rearCamera';
+
+  frontCamera.add(rearCamera);
 
 
   // Lighting
 
   light = new THREE.PointLight(0xFFFFFF, 1, 20, 1);
-  camera.add(light);
+  frontCamera.add(light);
 
   // Renderer
 
@@ -71,6 +80,18 @@ function initGraphics() {
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(game_canvas.clientWidth, game_canvas.clientHeight);
 
+
+  // ScissorTool
+
+
+  let rearViewRatio = new THREE.Vector2(0.3 , 0.3 ); //size of rear camera on screen (w, h)
+
+  scissorTool = new ScissorTool(renderer);
+  scissorTool.setPosFromBottomLeft( game_canvas.clientWidth * ( 1 - rearViewRatio.x ) , 0 );
+  scissorTool.setWidth( Math.round( game_canvas.clientWidth * rearViewRatio.x ) );
+  scissorTool.setHeight( Math.round( game_canvas.clientHeight * rearViewRatio.y ) );
+
+  
   /*GridHelper
 
 
@@ -111,7 +132,7 @@ function initGraphics() {
 // Function to detect collisions between the camera and random boxes
 
 function detectCollisions() {
-  cameraCube.position.set(camera.position.x, camera.position.y, camera.position.z);
+  cameraCube.position.set(frontCamera.position.x, frontCamera.position.y, frontCamera.position.z);
   cameraCube.geometry.computeBoundingBox();
   cameraCube.updateMatrixWorld();
 
@@ -150,7 +171,7 @@ function initControls() {
 
   move = false;
 
-  controls = new PointerLockControls(camera, document.body);
+  controls = new PointerLockControls(frontCamera, document.body);
 
   instructions.addEventListener('click', function () {
 
@@ -172,7 +193,7 @@ function initControls() {
     move = false;
   });
 
-  flycontrols = new FlyControls(camera, document.body);
+  flycontrols = new FlyControls(frontCamera, document.body);
 
   flycontrols.autoForward = true;
   flycontrols.movementSpeed = 10;
@@ -205,7 +226,7 @@ function loop() {
 
   recycleObjects();
 
-  renderer.render(scene, camera);
+  render();
 
 }
 
@@ -261,6 +282,18 @@ function recycleObjects() {
 
     box = objectPool.getObject();
   }
+
+} //end of recycle()
+
+function render() {
+
+  //render normal camera
+  renderer.render(scene, frontCamera);
+
+  //render rear camera
+  scissorTool.toggleScissor();
+  renderer.render(scene, rearCamera);
+  scissorTool.toggleScissor();
 
 }
 

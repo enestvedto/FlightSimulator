@@ -21,6 +21,7 @@ let light;
 
 let damage = document.getElementById('collision');
 damage.style.display = 'none';
+let damageOn;
 
 let game_canvas = document.getElementById("myCanvas");
 
@@ -179,19 +180,20 @@ function detectCollisions() {
 
     var bb = box.geometry.boundingBox;
     bb.applyMatrix4(box.matrixWorld);
+    if (damageOn) {
+      if (cbb.intersectsBox(bb)) {
+        damageShip();
+        box.material.uniforms.amplitude.value += 0.1;
+        if (box.material.uniforms.amplitude.value > 1) {
+          scene.remove(box);
+          box.material.uniforms.amplitude.value = 0;
 
-    if (cbb.intersectsBox(bb)) {
-      damageShip();
-      box.material.uniforms.amplitude.value += 0.1;
-      if (box.material.uniforms.amplitude.value > 1) {
-        scene.remove(box);
-        box.material.uniforms.amplitude.value = 0;
+          objectPool.releaseObject(box);
 
-        objectPool.releaseObject(box);
-
-        let idx = objects.indexOf(box);
-        objects.splice(idx, 1);
-        i--;
+          let idx = objects.indexOf(box);
+          objects.splice(idx, 1);
+          i--;
+        }
       }
     }
 
@@ -228,6 +230,7 @@ function initControls() {
     instructions.style.display = 'none';
     blocker.style.display = 'none';
     move = true;
+    damageOn = true;
   });
 
   controls.addEventListener('unlock', function () {
@@ -235,6 +238,7 @@ function initControls() {
     blocker.style.display = 'block';
     instructions.style.display = '';
     move = false;
+    damageOn = false;
   });
 
   flycontrols = new FlyControls(frontCamera, document.body);

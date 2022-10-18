@@ -84,14 +84,14 @@ function initGraphics() {
   // ScissorTool
 
 
-  let rearViewRatio = new THREE.Vector2(0.3 , 0.3 ); //size of rear camera on screen (w, h)
+  let rearViewRatio = new THREE.Vector2(0.3, 0.3); //size of rear camera on screen (w, h)
 
   scissorTool = new ScissorTool(renderer);
-  scissorTool.setPosFromBottomLeft( game_canvas.clientWidth * ( 1 - rearViewRatio.x ) , 0 );
-  scissorTool.setWidth( Math.round( game_canvas.clientWidth * rearViewRatio.x ) );
-  scissorTool.setHeight( Math.round( game_canvas.clientHeight * rearViewRatio.y ) );
+  scissorTool.setPosFromBottomLeft(game_canvas.clientWidth * (1 - rearViewRatio.x), 0);
+  scissorTool.setWidth(Math.round(game_canvas.clientWidth * rearViewRatio.x));
+  scissorTool.setHeight(Math.round(game_canvas.clientHeight * rearViewRatio.y));
 
-  
+
   /*GridHelper
 
 
@@ -106,7 +106,7 @@ function initGraphics() {
 
   // Particle explosion
   // Random Boxes
-  var numObjects = 50;
+  var numObjects = 75;
   objectPool = new ObjectPool(numObjects);
   objects = [];
 
@@ -117,6 +117,9 @@ function initGraphics() {
     box.position.x = getRndInteger(-25, 25);
     box.position.y = getRndInteger(-25, 25);
     box.position.z = getRndInteger(-25, 25);
+
+    box.material.uniforms.u_resolution.value.x = renderer.domElement.width;
+    box.material.uniforms.u_resolution.value.y = renderer.domElement.height;
 
     scene.add(box);
     objects.push(box);
@@ -220,7 +223,7 @@ function initControls() {
   flycontrols = new FlyControls(frontCamera, document.body);
 
   flycontrols.autoForward = true;
-  flycontrols.movementSpeed = 10;
+  flycontrols.movementSpeed = 15;
 
 }// end of initControls
 
@@ -273,7 +276,7 @@ function getDistance(o1, o2) {
 
 function recycleObjects() {
 
-  //remove objects farther than 100 units
+  //remove objects farther than 65 units
 
   for (let i = 0; i < objects.length; i++) {
 

@@ -43,7 +43,7 @@ export class ObjectPool {
         var toG = new THREE.TorusGeometry(2, 1, 16, 100);
         var torusGeometry = tessellateModifier.modify(toG);
         geometries.push(torusGeometry);
-        
+
 
         for (let i = 0; i < poolSize; i++) {
 
@@ -77,7 +77,8 @@ export class ObjectPool {
                 amplitude: { value: 0.0 },
                 delta: { value: 0 },
                 uColor: { value: new THREE.Color(0x31c48D) },
-                uColor1: { value: new THREE.Color(0x6C63FF) }
+                uColor1: { value: new THREE.Color(0x6C63FF) },
+                u_resolution: { type: "v2", value: new THREE.Vector2() },
             };
 
             var defaultMaterial = new THREE.ShaderMaterial({
@@ -103,8 +104,8 @@ export class ObjectPool {
 
             //allows object movement
             obj.userData = {};
-            obj.userData['velocity'] = new THREE.Vector3(MathUtils.randFloatSpread(4), MathUtils.randFloatSpread(4), MathUtils.randFloatSpread(4) );
-            obj.userData['rotation'] = new THREE.Vector3(MathUtils.randFloatSpread(Math.PI), MathUtils.randFloatSpread(Math.PI), MathUtils.randFloatSpread(Math.PI) );
+            obj.userData['velocity'] = new THREE.Vector3(MathUtils.randFloatSpread(4), MathUtils.randFloatSpread(4), MathUtils.randFloatSpread(4));
+            obj.userData['rotation'] = new THREE.Vector3(MathUtils.randFloatSpread(Math.PI), MathUtils.randFloatSpread(Math.PI), MathUtils.randFloatSpread(Math.PI));
 
             this.freeObjects.push(obj);
 

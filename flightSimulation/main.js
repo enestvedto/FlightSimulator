@@ -5,6 +5,7 @@ import { FlyControls } from 'three/addons/controls/FlyControls.js';
 import { ObjectPool } from './ObjectPool';
 import { Vector3, Vector4 } from 'three';
 import { ScissorTool } from './ScissorTool';
+import { MathUtils } from 'three';
 
 // Initalization of variables
 let scene, frontCamera, rearCamera, renderer, controls, clock;
@@ -12,6 +13,7 @@ let scene, frontCamera, rearCamera, renderer, controls, clock;
 let scissorTool;
 
 let objects, objectPool, cameraCube;
+const NUM_OBJECTS = 75;
 
 let move, flycontrols;
 
@@ -31,6 +33,7 @@ function main() {
   initGraphics();
 
   initControls();
+
   loop();
 
 }
@@ -109,11 +112,11 @@ function initGraphics() {
 
   // Particle explosion
   // Random Boxes
-  var numObjects = 75;
-  objectPool = new ObjectPool(numObjects);
+
+  objectPool = new ObjectPool(NUM_OBJECTS);
   objects = [];
 
-  for (let i = 0; i < numObjects; i++) {
+  for (let i = 0; i < NUM_OBJECTS; i++) {
 
     const box = objectPool.getObject();
 
@@ -272,6 +275,53 @@ function loop() {
 
 }
 
+function render() {
+
+  //render normal camera
+  renderer.render(scene, frontCamera);
+
+  //render rear camera
+  scissorTool.toggleScissor();
+  renderer.render(scene, rearCamera);
+  scissorTool.toggleScissor();
+
+}
+
+// Function to detect collisions between the camera and random boxes
+
+function detectCollisions() {
+  cameraCube.position.set(frontCamera.position.x, frontCamera.position.y, frontCamera.position.z);
+  cameraCube.geometry.computeBoundingBox();
+  cameraCube.updateMatrixWorld();
+
+  var cbb = cameraCube.geometry.boundingBox;
+  cbb.applyMatrix4(cameraCube.matrixWorld);
+
+  for (let i = 0; i < objects.length; i++) {
+    let box = objects[i];
+    box.geometry.computeBoundingBox();
+    box.updateMatrixWorld();
+
+    var bb = box.geometry.boundingBox;
+    bb.applyMatrix4(box.matrixWorld);
+
+    if (cbb.intersectsBox(bb)) {
+      box.material.uniforms.amplitude.value += 0.1;
+      if (box.material.uniforms.amplitude.value > 1) {
+        scene.remove(box);
+        box.material.uniforms.amplitude.value = 0;
+
+        objectPool.releaseObject(box);
+
+        let idx = objects.indexOf(box);
+        objects.splice(idx, 1);
+        i--;
+      }
+    }
+
+  }
+} //end of detectCollisions
+
 /**
  * Gets the distance from o1 to o2
  * @param {THREE.Mesh} o1 
@@ -319,6 +369,8 @@ function recycleObjects() {
     box.position.y = getRndInteger(-50, 50) + cameraCube.position.y;
     box.position.z = getRndInteger(-50, 50) + cameraCube.position.z;
 
+    box.userData.velocity = new THREE.Vector3(MathUtils.randFloatSpread(4), MathUtils.randFloatSpread(4), MathUtils.randFloatSpread(4));
+
     scene.add(box);
     objects.push(box);
 
@@ -326,17 +378,5 @@ function recycleObjects() {
   }
 
 } //end of recycle()
-
-function render() {
-
-  //render normal camera
-  renderer.render(scene, frontCamera);
-
-  //render rear camera
-  scissorTool.toggleScissor();
-  renderer.render(scene, rearCamera);
-  scissorTool.toggleScissor();
-
-}
 
 main();

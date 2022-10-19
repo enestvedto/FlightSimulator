@@ -1,13 +1,21 @@
+/**
+ * This is the final submission of project 2.
+ * Authors: Owen and Tones
+ * 
+ * ABOVE AND BEYOND
+ * - - - - - - - - - - - - - - - - - - - - - - 
+ * We have made explosions, a visual effect when you are not locked in on the screen,
+ * and the screen turns red using html/css elements.
+ */
+
 import './style.css';
 import * as THREE from 'three';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import { FlyControls } from 'three/addons/controls/FlyControls.js';
 import { ObjectPool } from './ObjectPool';
-import { Vector3, Vector4 } from 'three';
 import { ScissorTool } from './ScissorTool';
 import { MathUtils } from 'three';
 
-// Initalization of variables
 let scene, frontCamera, rearCamera, renderer, controls, clock;
 
 let scissorTool;
@@ -17,8 +25,6 @@ const NUM_OBJECTS = 75;
 
 let move, flycontrols;
 
-let light;
-
 let damage = document.getElementById('collision');
 damage.style.display = 'none';
 let damageOn;
@@ -27,7 +33,7 @@ let game_canvas = document.getElementById("myCanvas");
 
 function getRndInteger(min, max) {
   return Math.floor(Math.random() * (max - min)) + min;
-}
+} //end of getRndInteger
 
 function main() {
 
@@ -37,7 +43,7 @@ function main() {
 
   loop();
 
-}
+} //end of main
 
 /**
  *  init creates the objects required for the game 
@@ -68,17 +74,12 @@ function initGraphics() {
 
   scene.add(frontCamera);
 
-  rearCamera = new THREE.PerspectiveCamera(45, game_canvas.clientWidth / game_canvas.clientHeight, 1, 2000);
+  rearCamera = new THREE.PerspectiveCamera(45, game_canvas.clientWidth / game_canvas.clientHeight, 1, 2000);ScissorTool
   rearCamera.rotation.y = Math.PI;
   rearCamera.name = 'rearCamera';
 
   frontCamera.add(rearCamera);
 
-
-  // Lighting
-
-  light = new THREE.PointLight(0xFFFFFF, 1, 20, 1);
-  frontCamera.add(light);
 
   // Renderer
 
@@ -129,7 +130,8 @@ function initGraphics() {
   const cameraGeometry = new THREE.BoxGeometry(3, 3, 3);
   const cameraMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
   cameraCube = new THREE.Mesh(cameraGeometry, cameraMaterial);
-}
+
+} //end of initGraphics
 
 /**
  * Updates the the scenes objects a timestep of delta
@@ -144,56 +146,11 @@ function updateWorld(delta) {
     velocity.multiplyScalar(delta);
     object.position.add(velocity);
   }
-}
+} //end of updateWorld
 
-
-// Function to detect collisions between the camera and random boxes
-
-function detectCollisions() {
-  cameraCube.position.set(frontCamera.position.x, frontCamera.position.y, frontCamera.position.z);
-  cameraCube.geometry.computeBoundingBox();
-  cameraCube.updateMatrixWorld();
-
-  var cbb = cameraCube.geometry.boundingBox;
-  cbb.applyMatrix4(cameraCube.matrixWorld);
-
-  for (let i = 0; i < objects.length; i++) {
-    let box = objects[i];
-    box.geometry.computeBoundingBox();
-    box.updateMatrixWorld();
-
-    var bb = box.geometry.boundingBox;
-    bb.applyMatrix4(box.matrixWorld);
-    if (damageOn) {
-      if (cbb.intersectsBox(bb)) {
-        damageShip();
-        box.material.uniforms.amplitude.value += 0.1;
-        if (box.material.uniforms.amplitude.value > 1) {
-          scene.remove(box);
-          box.material.uniforms.amplitude.value = 0;
-
-          objectPool.releaseObject(box);
-
-          let idx = objects.indexOf(box);
-          objects.splice(idx, 1);
-          i--;
-        }
-      }
-    }
-
-  }
-} //end of detectCollisions
-
-async function damageShip() {
-  damage.style.display = 'block';
-  await delay(50);
-  damage.style.display = 'none';
-}
-
-function delay(time) {
-  return new Promise(resolve => setTimeout(resolve, time));
-}
-
+/**
+ * Sets up the controllers we are using for camera movement in space
+ */
 function initControls() {
 
   let instructions = document.getElementById('instructions');
@@ -233,6 +190,58 @@ function initControls() {
 }// end of initControls
 
 /**
+ * Function to detect collisions between the camera and random boxes
+*/
+function detectCollisions() {
+  cameraCube.position.set(frontCamera.position.x, frontCamera.position.y, frontCamera.position.z);
+  cameraCube.geometry.computeBoundingBox();
+  cameraCube.updateMatrixWorld();
+
+  var cbb = cameraCube.geometry.boundingBox;
+  cbb.applyMatrix4(cameraCube.matrixWorld);
+
+  for (let i = 0; i < objects.length; i++) {
+    let box = objects[i];
+    box.geometry.computeBoundingBox();
+    box.updateMatrixWorld();
+
+    var bb = box.geometry.boundingBox;
+    bb.applyMatrix4(box.matrixWorld);
+    if (damageOn) {
+      if (cbb.intersectsBox(bb)) {
+        damageShip();
+        box.material.uniforms.amplitude.value += 0.1;
+        if (box.material.uniforms.amplitude.value > 1) {
+          scene.remove(box);
+          box.material.uniforms.amplitude.value = 0;
+
+          objectPool.releaseObject(box);
+
+          let idx = objects.indexOf(box);
+          objects.splice(idx, 1);
+          i--;
+        }
+      }
+    }
+
+  }
+} //end of detectCollisions
+
+/**
+ * Applies screen effect for damage
+ */
+async function damageShip() {
+  damage.style.display = 'block';
+  await delay(50);
+  damage.style.display = 'none';
+} //end of damageShip
+
+function delay(time) {
+  return new Promise(resolve => setTimeout(resolve, time));
+} //end of delay
+
+
+/**
  *  loop is the main loop, responible for updating the canvas, 
  *  resetting the puzzle when complete.
  */
@@ -261,7 +270,7 @@ function loop() {
 
   render();
 
-}
+} //end of loop
 
 function render() {
 
@@ -273,7 +282,7 @@ function render() {
   renderer.render(scene, rearCamera);
   scissorTool.toggleScissor();
 
-}
+} //end of render
 
 /**
  * Gets the distance from o1 to o2
@@ -281,15 +290,15 @@ function render() {
  * @param {THREE.Mesh} o2 
  */
 function getDistance(o1, o2) {
-  let c1 = new Vector3();
-  let c2 = new Vector3();
+  let c1 = new THREE.Vector3();
+  let c2 = new THREE.Vector3();
 
   o1.geometry.boundingBox.getCenter(c1);
   o2.geometry.boundingBox.getCenter(c2);
 
   return c1.distanceTo(c2);
 
-}
+} //end of getDistance
 
 function recycleObjects() {
 
@@ -330,6 +339,6 @@ function recycleObjects() {
     box = objectPool.getObject();
   }
 
-} //end of recycle()
+} //end of recycleObjects
 
 main();

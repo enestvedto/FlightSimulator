@@ -44,7 +44,7 @@ export class ObjectPool {
         geometries.push(torusGeometry);
 
 
-        for (let i = 0; i < poolSize; i++) {
+       for (let i = 0; i < poolSize; i++) {
 
             var idx = this.getRndInteger(0, geometries.length);
             var randomGeometry = geometries[idx];
@@ -62,6 +62,7 @@ export class ObjectPool {
                     displacement[index + (3 * i) + 2] = d;
                 }
             }
+
 
             randomGeometry.setAttribute('displacement', new THREE.BufferAttribute(displacement, 3));
 

@@ -141,10 +141,16 @@ function updateWorld(delta) {
   for (let i = 0; i < objects.length; i++) {
     let object = objects[i];
     let velocity = object.userData['velocity'].clone(); //clone to not overwrite
-    let oldRotation = object.userData['rotation'];
+    let rotation = object.userData['rotation'].clone();
 
     velocity.multiplyScalar(delta);
     object.position.add(velocity);
+
+    rotation.multiplyScalar(delta);
+    object.rotation.x += rotation.x;
+    object.rotation.y += rotation.y;
+    object.rotation.z += rotation.z;
+    
   }
 } //end of updateWorld
 
@@ -254,8 +260,6 @@ function loop() {
 
   objects.forEach(item => {
     item.material.uniforms.delta.value = elapsedTime;
-    item.rotation.x += Math.sin(elapsedTime) * 0.02;
-    item.rotation.y += Math.cos(elapsedTime) * 0.02;
   });
 
   detectCollisions();
@@ -332,6 +336,7 @@ function recycleObjects() {
     box.position.z = getRndInteger(-50, 50) + cameraCube.position.z;
 
     box.userData.velocity = new THREE.Vector3(MathUtils.randFloatSpread(4), MathUtils.randFloatSpread(4), MathUtils.randFloatSpread(4));
+    box.userData.rotation = new THREE.Vector3(MathUtils.randFloatSpread(Math.PI), MathUtils.randFloatSpread(Math.PI), MathUtils.randFloatSpread(Math.PI));
 
     scene.add(box);
     objects.push(box);

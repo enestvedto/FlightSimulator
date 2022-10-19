@@ -7,6 +7,11 @@ import { TessellateModifier } from 'three/examples/jsm/modifiers/TessellateModif
 /**
  * A pool of objects for the Graphics World. 
  * Holds Meshes that can be tweaked and put back.
+ * 
+ * Unfortunately I (Tones) did not have the time, but if the opportunity 
+ * was there the object generation would be done in main.
+ * 
+ * Authors: Tone_Man and Owen
  */
 export class ObjectPool {
 
@@ -114,8 +119,12 @@ export class ObjectPool {
             this.freeObjects.push(obj);
 
         }
-    }
+    }//end of constructor
 
+    /**
+     * Gives user an object
+     * @returns Mesh
+     */
     getObject() {
         let object = this.freeObjects.pop();
 
@@ -124,8 +133,12 @@ export class ObjectPool {
 
         return object;
 
-    }
+    } //end of getObject
 
+    /**
+     * Returns user the object
+     * @param {Mesh} object 
+     */
     releaseObject(object) {
         let idx = this.lockedObjects.indexOf(object);
 
@@ -134,8 +147,12 @@ export class ObjectPool {
             this.lockedObjects.splice(idx, 1);
         }
 
-    }
+    }// end of releaseObject
 
+    /**
+     * Gives size of thredpool
+     * @returns Size of thredpool
+     */
     getSize() {
         return this.poolSize;
     }

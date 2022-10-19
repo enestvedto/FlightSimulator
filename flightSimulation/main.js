@@ -86,10 +86,12 @@ function initGraphics() {
   renderer = new THREE.WebGLRenderer({ canvas: game_canvas });
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(game_canvas.clientWidth, game_canvas.clientHeight);
-  
+
   let context = renderer.getContext();
 
   context.depthFunc(context.ALWAYS);
+
+
   // ScissorTool
 
 
@@ -100,18 +102,6 @@ function initGraphics() {
   scissorTool.setWidth(Math.round(game_canvas.clientWidth * rearViewRatio.x));
   scissorTool.setHeight(Math.round(game_canvas.clientHeight * rearViewRatio.y));
 
-
-  /*GridHelper
-
-
-  let HelperXZ = new THREE.GridHelper(100, 100);
-  scene.add(HelperXZ);
-
-  let HelperXY = new THREE.GridHelper(100, 100);
-  HelperXY.rotation.x = Math.PI / 2;
-  scene.add(HelperXY)
-
-  */
 
   // Particle explosion
   // Random Boxes
@@ -150,17 +140,9 @@ function updateWorld(delta) {
     let object = objects[i];
     let velocity = object.userData['velocity'].clone(); //clone to not overwrite
     let oldRotation = object.userData['rotation'];
-    let newRotation = oldRotation.clone();
 
     velocity.multiplyScalar(delta);
     object.position.add(velocity);
-
-    /*
-    newRotation.multiplyScalar(delta);  NEEED TO FIX SO ROTATION OCCURS
-    newRotation.add(oldRotation);
-    
-    object.rotation.setFromVector3(newRotation);
-    */
   }
 }
 

@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import { MathUtils } from 'three';
 
-import { Vector3 } from 'three';
 import { TessellateModifier } from 'three/examples/jsm/modifiers/TessellateModifier';
 
 

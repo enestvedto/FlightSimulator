@@ -86,8 +86,10 @@ function initGraphics() {
   renderer = new THREE.WebGLRenderer({ canvas: game_canvas });
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(game_canvas.clientWidth, game_canvas.clientHeight);
+  
+  let context = renderer.getContext();
 
-
+  context.depthFunc(context.ALWAYS);
   // ScissorTool
 
 

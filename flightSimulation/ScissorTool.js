@@ -1,5 +1,10 @@
 import { Vector2, Vector4} from "three";
 
+/**
+ * A simple class to make sciccoring a peice of cake!
+ * 
+ * Author: The Tone Man (Antonio Craveiro)
+ */
 export class ScissorTool {
 
     point = new Vector2(0, 100);
